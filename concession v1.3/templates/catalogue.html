@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}AutoDeal — Annonces{% endblock %}
+
+{% block content %}
+<section class="catalogue-section">
+    <div class="catalogue-header">
+        <h2>Toutes les annonces</h2>
+        <a href="{{ url_for('ajouter_vehicule') }}" class="btn-primary">
+            {% if session.get('role') == 'admin' %}+ Ajouter un véhicule{% else %}+ Proposer un véhicule{% endif %}
+        </a>
+    </div>
+
+    <!-- FILTRES -->
+    <form class="filtres" method="GET">
+        <input type="text" name="marque" placeholder="Marque" value="{{ marque }}">
+        <select name="carburant">
+            <option value="">Énergie</option>
+            <option value="essence" {% if carburant=='essence' %}selected{% endif %}>Essence</option>
+            <option value="diesel" {% if carburant=='diesel' %}selected{% endif %}>Diesel</option>
+            <option value="hybride" {% if carburant=='hybride' %}selected{% endif %}>Hybride</option>
+            <option value="electrique" {% if carburant=='electrique' %}selected{% endif %}>Électrique</option>
+        </select>
+        <input type="text" name="couleur" placeholder="Couleur" value="{{ couleur }}">
+        <input type="number" name="prix_min" placeholder="Prix min €" value="{{ prix_min }}">
+        <input type="number" name="prix_max" placeholder="Prix max €" value="{{ prix_max }}">
+        <select name="tri">
+            <option value="prix_asc" {% if tri=='prix_asc' %}selected{% endif %}>Prix ↑</option>
+            <option value="prix_desc" {% if tri=='prix_desc' %}selected{% endif %}>Prix ↓</option>
+            <option value="annee_desc" {% if tri=='annee_desc' %}selected{% endif %}>Année ↓</option>
+            <option value="km_asc" {% if tri=='km_asc' %}selected{% endif %}>Km ↑</option>
+        </select>
+        <button type="submit" class="btn-primary">Filtrer</button>
+        <a href="{{ url_for('catalogue') }}" class="btn-outline">Réinitialiser</a>
+    </form>
+
+    <!-- LISTE -->
+    <div class="cards-grid">
+        {% for v in vehicules %}
+        <a href="{{ url_for('vehicule_detail', id_vehicule=v.id_vehicule) }}" class="card">
+            <div class="card-img">
+                {% if v.photo %}
+                    <img src="{{ url_for('static', filename=v.photo) }}" alt="{{ v.titre }}">
+                {% else %}
+                    <div class="card-no-img">📷</div>
+                {% endif %}
+                <span class="card-likes">❤️ {{ v.nb_likes }}</span>
+            </div>
+            <div class="card-body">
+                <h3>{{ v.titre }}</h3>
+                <div class="card-meta">
+                    <span>{{ v.annee }}</span>
+                    <span>{{ v.km }} km</span>
+                    <span>{{ v.carburant }}</span>
+                </div>
+                <p class="card-prix">{{ "%.0f"|format(v.prix_vente) }} €</p>
+            </div>
+        </a>
+        {% else %}
+        <p class="empty">Aucun véhicule trouvé.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}Panel Admin — AutoDeal{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <h2>🛠 Panel Administrateur</h2>
+
+    <!-- DEMANDES D'ACHAT -->
+    <div class="admin-block">
+        <h3>Demandes d'achat en attente</h3>
+        {% if demandes_achat %}
+        <table class="admin-table">
+            <thead>
+                <tr><th>#</th><th>Client</th><th>Véhicule</th><th>Prix proposé</th><th>Date</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+            {% for d in demandes_achat %}
+            <tr>
+                <td>#{{ d.id_demande }}</td>
+                <td>{{ d.username }}</td>
+                <td>{{ d.titre }}</td>
+                <td>{{ "%.0f"|format(d.prix_propose) }} €</td>
+                <td>{{ d.date_demande }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('traiter_achat', id_demande=d.id_demande) }}" style="display:inline">
+                        <input type="number" name="prix_final" placeholder="Prix final" step="0.01" style="width:100px">
+                        <button name="decision" value="accepter" class="btn-small btn-green">✔ Accepter</button>
+                        <button name="decision" value="refuser" class="btn-small btn-red">✘ Refuser</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty">Aucune demande en attente.</p>
+        {% endif %}
+    </div>
+
+    <!-- DEMANDES AJOUT VEHICULE -->
+    <div class="admin-block">
+        <h3>Demandes d'ajout de véhicule</h3>
+        {% if demandes_ajout %}
+        <table class="admin-table">
+            <thead>
+                <tr><th>#</th><th>Client</th><th>Titre</th><th>Marque</th><th>Prix</th><th>Date</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+            {% for d in demandes_ajout %}
+            <tr>
+                <td>#{{ d.id_demande }}</td>
+                <td>{{ d.username }}</td>
+                <td>{{ d.titre }}</td>
+                <td>{{ d.marque }} {{ d.modele }}</td>
+                <td>{{ "%.0f"|format(d.prix_vente) }} €</td>
+                <td>{{ d.date_demande }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('traiter_ajout', id_demande=d.id_demande) }}" style="display:inline">
+                        <button name="decision" value="accepter" class="btn-small btn-green">✔ Accepter</button>
+                        <button name="decision" value="refuser" class="btn-small btn-red">✘ Refuser</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty">Aucune demande d'ajout.</p>
+        {% endif %}
+    </div>
+
+    <!-- GESTION VEHICULES -->
+    <div class="admin-block">
+        <h3>Gestion des véhicules</h3>
+        {% if vehicules %}
+        <table class="admin-table">
+            <thead>
+                <tr><th>#</th><th>Titre</th><th>Marque</th><th>Prix</th><th>Statut</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+            {% for v in vehicules %}
+            <tr>
+                <td>#{{ v.id_vehicule }}</td>
+                <td><a href="{{ url_for('vehicule_detail', id_vehicule=v.id_vehicule) }}" style="color:var(--accent)">{{ v.titre }}</a></td>
+                <td>{{ v.marque }} {{ v.modele }}</td>
+                <td>{{ "%.0f"|format(v.prix_vente) }} €</td>
+                <td>
+                    <span class="badge {% if v.statut == 'en_stock' %}badge-verified{% else %}badge-user{% endif %}">
+                        {{ v.statut }}
+                    </span>
+                </td>
+                <td>
+                    <form method="POST" action="{{ url_for('supprimer_vehicule', id_vehicule=v.id_vehicule) }}"
+                          style="display:inline"
+                          onsubmit="return confirm('Supprimer ce véhicule ?')">
+                        <button class="btn-small btn-red">🗑 Supprimer</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty">Aucun véhicule.</p>
+        {% endif %}
+    </div>
+
+    <!-- CLIENTS -->
+    <div class="admin-block">
+        <h3>Gestion des clients</h3>
+        {% if clients %}
+        <table class="admin-table">
+            <thead>
+                <tr><th>#</th><th>Username</th><th>Nom</th><th>Email</th><th>Rôle</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+            {% for c in clients %}
+            <tr>
+                <td>#{{ c.id_client }}</td>
+                <td>{{ c.username }}</td>
+                <td>{{ c.prenom }} {{ c.nom }}</td>
+                <td>{{ c.email or '-' }}</td>
+                <td>
+                    <span class="badge {% if c.role == 'admin' %}badge-admin{% elif c.role == 'verified' %}badge-verified{% else %}badge-user{% endif %}">
+                        {{ c.role }}
+                    </span>
+                </td>
+                <td>
+                    <form method="POST" action="{{ url_for('changer_role', id_client=c.id_client) }}" style="display:inline">
+                        <select name="role">
+                            <option value="user" {% if c.role=='user' %}selected{% endif %}>user</option>
+                            <option value="verified" {% if c.role=='verified' %}selected{% endif %}>verified</option>
+                            <option value="admin" {% if c.role=='admin' %}selected{% endif %}>admin</option>
+                        </select>
+                        <button type="submit" class="btn-small">Changer</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('supprimer_client', id_client=c.id_client) }}" style="display:inline"
+                          onsubmit="return confirm('Supprimer ce client ?')">
+                        <button class="btn-small btn-red">Supprimer</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty">Aucun client.</p>
+        {% endif %}
+    </div>
+
+    <!-- VENTES -->
+    <div class="admin-block">
+        <h3>Historique des ventes</h3>
+        {% if ventes %}
+        <table class="admin-table">
+            <thead>
+                <tr><th>#</th><th>Date</th><th>Client</th><th>Véhicule</th><th>Prix final</th></tr>
+            </thead>
+            <tbody>
+            {% for v in ventes %}
+            <tr>
+                <td>#{{ v.id_vente }}</td>
+                <td>{{ v.date_vente }}</td>
+                <td>{{ v.username }}</td>
+                <td>{{ v.titre }}</td>
+                <td>{{ "%.0f"|format(v.prix_final) }} €</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty">Aucune vente.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

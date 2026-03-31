@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Profil — AutoDeal{% endblock %}
+
+{% block content %}
+<section class="profil-section">
+    <div class="profil-header">
+        <div class="profil-avatar">{{ session.username[0].upper() }}</div>
+        <div class="profil-info">
+            <h2>{{ session.username }}
+                {% if session.role == 'admin' %}
+                    <span class="badge badge-admin">ADMIN</span>
+                {% elif session.role == 'verified' %}
+                    <span class="badge badge-verified">✔ Vérifié</span>
+                {% else %}
+                    <span class="badge badge-user">Utilisateur</span>
+                {% endif %}
+            </h2>
+            {% if user %}
+            <p>{{ user.prenom }} {{ user.nom }}</p>
+            <p>{{ user.email or '' }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="profil-likes">
+        <h3>❤️ Mes véhicules likés</h3>
+        {% if likes %}
+        <div class="cards-grid">
+            {% for v in likes %}
+            <a href="{{ url_for('vehicule_detail', id_vehicule=v.id_vehicule) }}" class="card">
+                <div class="card-img">
+                    {% if v.photo %}
+                        <img src="{{ url_for('static', filename=v.photo) }}" alt="{{ v.titre }}">
+                    {% else %}
+                        <div class="card-no-img">📷</div>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <h3>{{ v.titre }}</h3>
+                    <div class="card-meta">
+                        <span>{{ v.annee }}</span>
+                        <span>{{ v.km }} km</span>
+                        <span>{{ v.carburant }}</span>
+                    </div>
+                    <p class="card-prix">{{ "%.0f"|format(v.prix_vente) }} €</p>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="empty">Vous n'avez pas encore liké de véhicule.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,20 @@
+Notion première/terminal :
+
+algorithme de 
+tri par selection
+tri par insersion (bulle)
+tri par fusion 
+
+moyenne simple 
+moyenne pondéré
+
+dichotomie
+
+recherche element (+ index)
+
+min - max (savoir l'indice)
+
+
+assert						#ce type d'information est demander lors des epreuves du bac bien les utiliser rapporte
+docstring					 plus de points , pour la propreté et la lisibilité et facilite les question des jury
+commentaire (mettre dans des code etc...)	 etant donnée qu'ils vont surement se focalisé sur ces information et moin sur le code
