@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Conversation — AutoDeal{% endblock %}
+
+{% block content %}
+<section class="messages-section">
+    <h2>Messages</h2>
+    <div class="messages-layout">
+
+        <!-- SIDEBAR -->
+        <div class="conv-list">
+            <a href="{{ url_for('messages') }}" class="btn-outline">← Retour</a>
+        </div>
+
+        <!-- CONVERSATION -->
+        <div class="conv-main">
+            <div class="conv-header">
+                <div class="conv-avatar">{{ other.username[0].upper() }}</div>
+                <span>{{ other.username }}</span>
+                {% if other.role == 'admin' %}
+                    <span class="badge badge-admin">ADMIN</span>
+                {% elif other.role == 'verified' %}
+                    <span class="badge badge-verified">✔ Vérifié</span>
+                {% endif %}
+            </div>
+
+            <div class="conv-messages" id="messages-box">
+                {% for m in msgs %}
+                <div class="msg {% if m.id_expediteur == session.user_id %}msg-me{% else %}msg-other{% endif %}">
+                    <div class="msg-header">
+                        <span class="msg-username
+                            {% if m.role == 'admin' %}msg-admin{% elif m.role == 'verified' %}msg-verified{% endif %}">
+                            {{ m.username }}
+                            {% if m.role == 'admin' %}[ADMIN]{% elif m.role == 'verified' %}[✔]{% endif %}
+                        </span>
+                        <span class="msg-date">{{ m.date_envoi }}</span>
+                    </div>
+                    <div class="msg-content">{{ m.contenu }}</div>
+                </div>
+                {% else %}
+                <p class="empty">Commencez la conversation.</p>
+                {% endfor %}
+            </div>
+
+            <form class="msg-form" method="POST" action="{{ url_for('envoyer_message') }}">
+                <input type="hidden" name="id_destinataire" value="{{ other.id_client }}">
+                <input type="text" name="contenu" placeholder="Votre message..." autocomplete="off" required>
+                <button type="submit" class="btn-primary">Envoyer</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const otherId = {{ other.id_client }};
+
+    function disableSubmit() {
+        const btn = document.getElementById('btn-send');
+        btn.disabled = true;
+        btn.textContent = '...';
+    }
+
+    function loadMessages() {
+        fetch(`/messages/poll/${otherId}`)
+            .then(r => r.json())
+            .then(msgs => {
+                const box = document.getElementById('messages-box');
+                const empty = box.querySelector('.empty');
+                if (empty) empty.remove();
+
+                msgs.forEach(m => {
+                    const id = `msg-${m.id_message}`;
+                    if (!document.getElementById(id)) {
+                        const div = document.createElement('div');
+                        div.id = id;
+                        div.className = `msg ${m.is_me ? 'msg-me' : 'msg-other'}`;
+                        const roleClass = m.role === 'admin' ? 'msg-admin' : m.role === 'verified' ? 'msg-verified' : '';
+                        const roleTag = m.role === 'admin' ? '[ADMIN]' : m.role === 'verified' ? '[✔]' : '';
+                        div.innerHTML = `
+                            <div class="msg-header">
+                                <span class="msg-username ${roleClass}">${m.username} ${roleTag}</span>
+                                <span class="msg-date">${m.date_envoi}</span>
+                            </div>
+                            <div class="msg-content">${m.contenu}</div>
+                        `;
+                        box.appendChild(div);
+                        box.scrollTop = box.scrollHeight;
+                    }
+                });
+            });
+    }
+
+    window.onload = () => {
+        const box = document.getElementById('messages-box');
+        box.scrollTop = box.scrollHeight;
+        loadMessages();
+    };
+
+    setInterval(loadMessages, 2000);
+</script>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}AutoDeal — Accueil{% endblock %}
+
+{% block content %}
+
+<!-- BANDEAU -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>Achetez votre véhicule<br><span>à petit prix, à petit frais.</span></h1>
+        <p>Des centaines d'annonces vérifiées, neuves ou d'occasion.</p>
+        <a href="{{ url_for('catalogue') }}" class="btn-primary">Voir les annonces</a>
+    </div>
+    <div class="hero-overlay"></div>
+</section>
+
+<!-- VEHICULES POPULAIRES -->
+<section class="section-populaires">
+    <h2>🔥 Véhicules populaires</h2>
+    <div class="cards-grid">
+        {% for v in vehicules %}
+        <a href="{{ url_for('vehicule_detail', id_vehicule=v.id_vehicule) }}" class="card">
+            <div class="card-img">
+                {% if v.photo %}
+                    <img src="{{ url_for('static', filename=v.photo) }}" alt="{{ v.titre }}">
+                {% else %}
+                    <div class="card-no-img">📷</div>
+                {% endif %}
+                <span class="card-likes">❤️ {{ v.nb_likes }}</span>
+            </div>
+            <div class="card-body">
+                <h3>{{ v.titre }}</h3>
+                <div class="card-meta">
+                    <span>{{ v.annee }}</span>
+                    <span>{{ v.km }} km</span>
+                    <span>{{ v.carburant }}</span>
+                </div>
+                <p class="card-prix">{{ "%.0f"|format(v.prix_vente) }} €</p>
+            </div>
+        </a>
+        {% else %}
+        <p class="empty">Aucun véhicule disponible pour le moment.</p>
+        {% endfor %}
+    </div>
+    <div class="voir-tout">
+        <a href="{{ url_for('catalogue') }}" class="btn-primary">Voir tout</a>
+    </div>
+</section>
+
+{% endblock %}

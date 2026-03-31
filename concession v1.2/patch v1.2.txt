@@ -1,0 +1,25 @@
+Patch note v1.2
+
+Corrections
+
+Bug fix — Base de données multiples : La DB était créée à des endroits différents selon le dossier de lancement. Résolu en utilisant un chemin absolu avec os.path.dirname(os.path.abspath(__file__)) pour que la DB soit toujours créée dans le même dossier que app.py
+Bug fix — PRAGMA journal_mode=WAL : Le mode WAL causait des erreurs disk I/O error notamment sur les fichiers OneDrive. Supprimé de get_db()
+Bug fix — Messagerie SocketIO : Le WebSocket via flask-socketio était incompatible avec Python 3.13/3.14. Remplacé par un système de polling toutes les 2 secondes via fetch() et une route /messages/poll/<id>
+Bug fix — Admin FK constraint : L'admin avec user_id = -1 ne pouvait pas envoyer de messages car -1 n'existe pas dans la table client. Résolu en créant un vrai compte admin en DB au démarrage via init_db()
+Bug fix — Messages en double : Le poll ajoutait les messages en double. Résolu en vérifiant l'id de chaque message avant insertion dans le DOM
+Bug fix — Ordre des messages : Les messages n'étaient pas dans le bon ordre car date_envoi ne stockait que la date. Corrigé en utilisant datetime.now().isoformat() pour inclure l'heure
+Bug fix — Code WebSocket orphelin : Des blocs de code SocketIO restaient dans app.py sans fonction parent, causant des erreurs de syntaxe. Nettoyé
+
+
+Nouvelles fonctionnalités
+
+Messagerie temps réel (polling) : Les nouveaux messages apparaissent automatiquement toutes les 2 secondes sans recharger la page
+Protection double envoi : Le bouton Envoyer est désactivé après clic pour éviter les doublons
+Compte admin en DB : L'admin est maintenant un vrai utilisateur avec un id_client valide, ce qui lui permet d'envoyer et recevoir des messages
+
+
+Objectifs v1.3
+
+Réparer l'ajout de véhicule (formulaire admin et demande utilisateur)
+Vérifier l'upload de photos
+Tester le flux complet : ajout → validation admin → affichage catalogue

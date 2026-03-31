@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Messages — AutoDeal{% endblock %}
+
+{% block content %}
+<section class="messages-section">
+    <h2>Messages</h2>
+    <div class="messages-layout">
+
+        <!-- SIDEBAR CONVERSATIONS -->
+        <div class="conv-list">
+            <h3>Conversations</h3>
+            {% for c in conversations %}
+            <a href="{{ url_for('conversation', other_id=c.other_id) }}" class="conv-item">
+                <div class="conv-avatar">{{ c.username[0].upper() }}</div>
+                <div class="conv-info">
+                    <span class="conv-username">{{ c.username }}</span>
+                    {% if c.role == 'admin' %}
+                        <span class="badge badge-admin">ADMIN</span>
+                    {% elif c.role == 'verified' %}
+                        <span class="badge badge-verified">✔</span>
+                    {% endif %}
+                </div>
+            </a>
+            {% else %}
+            <p class="empty">Aucune conversation.</p>
+            {% endfor %}
+
+            <!-- Admin : nouvelle conversation -->
+            {% if session.role == 'admin' and all_users %}
+            <div class="new-conv">
+                <h4>Nouvelle conversation</h4>
+                <form method="GET" action="">
+                    <select name="user_select" onchange="window.location='/messages/'+this.value">
+                        <option value="">Choisir un utilisateur...</option>
+                        {% for u in all_users %}
+                        <option value="{{ u.id_client }}">{{ u.username }} ({{ u.role }})</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ZONE PRINCIPALE -->
+        <div class="conv-main">
+            <p class="empty">Sélectionnez une conversation.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

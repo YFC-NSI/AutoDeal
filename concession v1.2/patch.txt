@@ -1,0 +1,12 @@
+Patch note v1.1
+
+Corrections
+
+Bug fix — Connexion admin : session["user_id"] passait à 0 ce qui est falsy en Python, remplacé par -1
+Bug fix — Navbar : La condition Jinja2 is not none ne détecte pas correctement les valeurs de session, remplacé par 'user_id' in session qui est la syntaxe correcte pour Jinja2
+
+
+Utilisation du site
+Le site est un concessionnaire automobile en ligne. Depuis la page d'accueil tu vois les 5 véhicules les plus likés. En cliquant sur Annonces tu accèdes au catalogue complet, filtrable par marque, énergie, couleur et prix.
+En tant qu'utilisateur tu peux créer un compte, liker des véhicules, proposer un prix sur une annonce, envoyer une demande d'ajout de véhicule et contacter d'autres utilisateurs via la messagerie.
+En tant qu'admin (username: admin / password: admin123) tu as accès au panel admin qui te permet d'ajouter des véhicules directement, valider ou refuser les demandes d'achat et d'ajout, gérer les rôles des utilisateurs (user / verified / admin) et consulter l'historique des ventes.
