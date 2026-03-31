@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Conversation — AutoDeal{% endblock %}
+
+{% block content %}
+<section class="messages-section">
+    <h2>Messages</h2>
+    <div class="messages-layout">
+
+        <!-- SIDEBAR -->
+        <div class="conv-list">
+            <a href="{{ url_for('messages') }}" class="btn-outline">← Retour</a>
+        </div>
+
+        <!-- CONVERSATION -->
+        <div class="conv-main">
+            <div class="conv-header">
+                <div class="conv-avatar">{{ other.username[0].upper() }}</div>
+                <span>{{ other.username }}</span>
+                {% if other.role == 'admin' %}
+                    <span class="badge badge-admin">ADMIN</span>
+                {% elif other.role == 'verified' %}
+                    <span class="badge badge-verified">✔ Vérifié</span>
+                {% endif %}
+            </div>
+
+            <div class="conv-messages" id="messages-box">
+                {% for m in msgs %}
+                <div class="msg {% if m.id_expediteur == session.user_id %}msg-me{% else %}msg-other{% endif %}">
+                    <div class="msg-header">
+                        <span class="msg-username
+                            {% if m.role == 'admin' %}msg-admin{% elif m.role == 'verified' %}msg-verified{% endif %}">
+                            {{ m.username }}
+                            {% if m.role == 'admin' %}[ADMIN]{% elif m.role == 'verified' %}[✔]{% endif %}
+                        </span>
+                        <span class="msg-date">{{ m.date_envoi }}</span>
+                    </div>
+                    <div class="msg-content">{{ m.contenu }}</div>
+                </div>
+                {% else %}
+                <p class="empty">Commencez la conversation.</p>
+                {% endfor %}
+            </div>
+
+            <form class="msg-form" id="msg-form">
+                <input type="text" id="msg-input" placeholder="Votre message..." autocomplete="off" required>
+                <button type="submit" class="btn-primary">Envoyer</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
+<script>
+const socket = io();
+const userId = {{ session.user_id }};
+const otherId = {{ other.id_client }};
+const myRole = "{{ session.role }}";
+const myUsername = "{{ session.username }}";
+
+socket.emit('join', { user_id: userId, other_id: otherId });
+
+document.getElementById('msg-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const input = document.getElementById('msg-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+    socket.emit('message', { user_id: userId, other_id: otherId, contenu: msg });
+    input.value = '';
+});
+
+socket.on('message', function(data) {
+    const box = document.getElementById('messages-box');
+    const isMe = data.username === myUsername;
+    const roleClass = data.role === 'admin' ? 'msg-admin' : data.role === 'verified' ? 'msg-verified' : '';
+    const roleTag = data.role === 'admin' ? '[ADMIN]' : data.role === 'verified' ? '[✔]' : '';
+
+    box.innerHTML += `
+        <div class="msg ${isMe ? 'msg-me' : 'msg-other'}">
+            <div class="msg-header">
+                <span class="msg-username ${roleClass}">${data.username} ${roleTag}</span>
+                <span class="msg-date">${data.date}</span>
+            </div>
+            <div class="msg-content">${data.contenu}</div>
+        </div>
+    `;
+    box.scrollTop = box.scrollHeight;
+});
+
+// Scroll en bas au chargement
+window.onload = () => {
+    const box = document.getElementById('messages-box');
+    box.scrollTop = box.scrollHeight;
+};
+</script>
+{% endblock %}
