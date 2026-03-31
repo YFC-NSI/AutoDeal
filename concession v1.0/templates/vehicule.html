@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}{{ v.titre }} — AutoDeal{% endblock %}
+
+{% block content %}
+<section class="detail-section">
+
+    <!-- GALERIE -->
+    <div class="galerie">
+        {% if photos %}
+            <div class="galerie-main">
+                <img id="main-photo" src="{{ url_for('static', filename=photos[0].chemin) }}" alt="{{ v.titre }}">
+            </div>
+            {% if photos|length > 1 %}
+            <div class="galerie-thumbs">
+                {% for p in photos %}
+                <img src="{{ url_for('static', filename=p.chemin) }}"
+                     onclick="document.getElementById('main-photo').src=this.src"
+                     class="thumb {% if loop.first %}active{% endif %}">
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="galerie-empty">Aucune photo disponible</div>
+        {% endif %}
+    </div>
+
+    <!-- INFOS -->
+    <div class="detail-infos">
+        <h1>{{ v.titre }}</h1>
+        <p class="detail-prix">{{ "%.0f"|format(v.prix_vente) }} €</p>
+
+        <!-- LIKE -->
+        <div class="like-container">
+            {% if session.get('user_id') %}
+            <button class="btn-like {% if user_liked %}liked{% endif %}"
+                    onclick="toggleLike({{ v.id_vehicule }}, this)">
+                ❤️ <span class="like-count">{{ v.nb_likes }}</span>
+            </button>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="btn-like">❤️ {{ v.nb_likes }}</a>
+            {% endif %}
+        </div>
+
+        <!-- FICHE TECHNIQUE -->
+        <div class="fiche-technique">
+            <h3>Fiche technique</h3>
+            <div class="fiche-grid">
+                <div class="fiche-item"><span>Marque</span><strong>{{ v.marque }}</strong></div>
+                <div class="fiche-item"><span>Modèle</span><strong>{{ v.modele }}</strong></div>
+                <div class="fiche-item"><span>Année</span><strong>{{ v.annee }}</strong></div>
+                <div class="fiche-item"><span>Kilométrage</span><strong>{{ v.km }} km</strong></div>
+                <div class="fiche-item"><span>Énergie</span><strong>{{ v.carburant }}</strong></div>
+                <div class="fiche-item"><span>Couleur</span><strong>{{ v.couleur }}</strong></div>
+                <div class="fiche-item"><span>Puissance</span><strong>{{ v.puissance or '-' }} ch</strong></div>
+                <div class="fiche-item"><span>Boîte</span><strong>{{ v.boite }}</strong></div>
+                <div class="fiche-item"><span>Portes</span><strong>{{ v.nb_portes }}</strong></div>
+                <div class="fiche-item"><span>État</span><strong>{{ v.etat }}</strong></div>
+                <div class="fiche-item"><span>Localisation</span><strong>{{ v.localisation }}</strong></div>
+            </div>
+        </div>
+
+        <!-- DESCRIPTION -->
+        {% if v.description %}
+        <div class="description">
+            <h3>Description</h3>
+            <p>{{ v.description }}</p>
+        </div>
+        {% endif %}
+
+        <!-- ACTIONS -->
+        {% if session.get('user_id') and session.get('role') != 'admin' %}
+        <div class="actions">
+            <form method="POST" action="{{ url_for('acheter', id_vehicule=v.id_vehicule) }}" class="form-achat">
+                <h3>Faire une offre</h3>
+                <input type="number" name="prix_propose" placeholder="Votre prix (€)" step="0.01" required>
+                <textarea name="commentaire" placeholder="Message (optionnel)"></textarea>
+                <button type="submit" class="btn-primary">Envoyer la demande</button>
+            </form>
+
+            <a href="{{ url_for('messages') }}?contact={{ v.id_vehicule }}" class="btn-outline">
+                💬 Contacter le vendeur
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleLike(id, btn) {
+    fetch(`/like/${id}`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            btn.classList.toggle('liked', data.liked);
+            btn.querySelector('.like-count').textContent = data.nb_likes;
+        });
+}
+</script>
+{% endblock %}
